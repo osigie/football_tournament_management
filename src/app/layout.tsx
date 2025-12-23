@@ -17,8 +17,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen flex flex-col items-center">
-          <main className="w-full max-w-6xl p-4 md:p-8">
+        <div className="min-h-screen flex flex-col items-center bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-[hsl(220,15%,15%)] to-[hsl(var(--background))]">
+          <main className="w-full max-w-7xl p-6 md:p-12 lg:p-16">
             {children}
           </main>
         </div>

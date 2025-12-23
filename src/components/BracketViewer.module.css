@@ -1,0 +1,144 @@
+.container {
+  overflow-x: auto;
+  padding: 2rem;
+}
+
+.bracket {
+  display: flex;
+  gap: 4rem; /* Space between rounds */
+}
+
+.round {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  min-width: 240px;
+}
+
+.roundHeader {
+  text-align: center;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  letter-spacing: 0.05em;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid hsla(var(--primary), 0.3);
+}
+
+.matchWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin: 1rem 0;
+}
+
+/* Match Card Styling */
+.match {
+  width: 100%;
+  background: hsla(220, 15%, 16%, 0.8);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  position: relative;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.match:hover {
+  border-color: hsl(var(--primary));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0,0,0,0.2);
+}
+
+.teamRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+
+.teamName {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.winner {
+  color: hsl(var(--primary));
+  font-weight: 700;
+  text-shadow: 0 0 10px hsla(var(--primary), 0.3);
+}
+
+.score {
+  background: hsla(220, 15%, 10%, 0.5);
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  font-family: monospace;
+  font-weight: 700;
+  min-width: 24px;
+  text-align: center;
+}
+
+.divider {
+  height: 1px;
+  background: var(--glass-border);
+  width: 100%;
+}
+
+.legBadge {
+  position: absolute;
+  top: -8px;
+  right: 10px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Connectors */
+/* We use pseudo-elements on .matchWrapper to draw lines */
+
+/* Line extending to the right from the match */
+.matchWrapper::after {
+  content: '';
+  position: absolute;
+  right: -2rem; /* Half of gap */
+  top: 50%;
+  width: 2rem;
+  height: 2px;
+  background: var(--glass-border);
+  display: none; /* Hidden by default, shown based on round logic */
+}
+
+/* Vertical bracket lines would require knowing the "pair" logic which is hard in purely flat lists.
+   However, we can hack it: 
+   If we assume standard 2-power brackets, we can use :nth-child logic if we render them in order.
+   But since we have "Home & Away" creating 2 matches per pairing, standard nth-child breaks.
+   
+   Better approach for Visuals: 
+   Use an SVG layer or just careful CSS borders on a wrapper.
+   
+   Let's stick to simple horizontal connectors for now which is cleaner than broken vertical ones.
+   "FIFA-like" usually emphasizes the card itself.
+   
+   To do verticals properly without JS calculations, we'd need a nested DOM:
+   <Round>
+     <Pair>
+       <Match1/>
+       <Match2/>
+     </Pair>
+   </Round>
+   
+   Let's refactor the React component to group by Pairings.
+*/

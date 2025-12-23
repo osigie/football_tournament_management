@@ -1,13 +1,15 @@
 import React from 'react';
 import { Match, Team } from '../types';
 import { Card } from './ui/Card';
+import styles from './BracketViewer.module.css';
 
 interface BracketViewerProps {
   matches: Match[];
   teams: Team[];
+  onEditMatch?: (match: Match) => void;
 }
 
-export const BracketViewer: React.FC<BracketViewerProps> = ({ matches, teams }) => {
+export const BracketViewer: React.FC<BracketViewerProps> = ({ matches, teams, onEditMatch }) => {
   // Group matches by round
   const rounds = matches.reduce((acc, match) => {
     const roundKey = match.round;
@@ -32,47 +34,52 @@ export const BracketViewer: React.FC<BracketViewerProps> = ({ matches, teams }) 
   };
 
   return (
-    <Card title="Knockout Bracket" className="overflow-x-auto">
-      <div className="flex gap-12 min-w-max p-4">
+    <Card title="Knockout Bracket" className={styles.container}>
+      <div className={styles.bracket}>
         {sortedRoundKeys.map(round => (
-          <div key={round} className="flex flex-col justify-around gap-8 min-w-[200px]">
-             <h4 className="text-center font-bold text-[hsl(var(--primary))] uppercase text-sm tracking-wider mb-4 border-b border-[var(--glass-border)] pb-2">
+          <div key={round} className={styles.round}>
+             <h4 className={styles.roundHeader}>
                {getRoundName(round)}
              </h4>
-             <div className="flex flex-col justify-around flex-grow gap-8">
-               {rounds[round].map(match => (
-                 <div key={match.id} className="relative bg-[hsla(220,15%,20%,0.4)] p-3 rounded border border-[var(--glass-border)] flex flex-col gap-2">
-                   {/* Home */}
-                   <div className="flex justify-between items-center text-sm">
-                      <span className={match.result && match.result.homeGoals > match.result.awayGoals ? 'font-bold text-[hsl(var(--primary))]' : ''}>
-                        {getTeamName(match.homeTeamId)}
-                      </span>
-                      {match.result && <span className="bg-[var(--surface)] px-1.5 rounded">{match.result.homeGoals}</span>}
-                   </div>
-                   
-                   {/* Divider */}
-                   <div className="h-[1px] bg-[var(--glass-border)] w-full my-0.5"></div>
-
-                   {/* Away */}
-                   <div className="flex justify-between items-center text-sm">
-                      <span className={match.result && match.result.awayGoals > match.result.homeGoals ? 'font-bold text-[hsl(var(--primary))]' : ''}>
-                        {getTeamName(match.awayTeamId)}
-                      </span>
-                      {match.result && <span className="bg-[var(--surface)] px-1.5 rounded">{match.result.awayGoals}</span>}
-                   </div>
-                   
-                   {/* Leg Info */}
+             {rounds[round].map(match => (
+               <div key={match.id} className={styles.matchWrapper}>
+                 <div className={styles.match}>
                    {match.leg && (
-                    <div className="absolute top-0 right-0 bg-[var(--primary)] text-[var(--primary-foreground)] text-[10px] px-1 rounded-bl">
-                        L{match.leg}
+                    <div className={styles.legBadge}>
+                        Leg {match.leg}
                     </div>
                    )}
+                   
+                   {/* Home */}
+                   <div className={styles.teamRow}>
+                      <span className={`${styles.teamName} ${match.result && match.result.homeGoals > match.result.awayGoals ? styles.winner : ''}`}>
+                        {getTeamName(match.homeTeamId)}
+                      </span>
+                      {match.result && <span className={styles.score}>{match.result.homeGoals}</span>}
+                   </div>
+                   
+                   <div className={styles.divider}></div>
 
-                   {/* Connector lines (visual only, simplified) */}
-                   <div className="absolute right-[-24px] top-1/2 w-6 h-[1px] bg-[var(--glass-border)] hidden md:block"></div>
+                   {/* Away */}
+                   <div className={styles.teamRow}>
+                      <span className={`${styles.teamName} ${match.result && match.result.awayGoals > match.result.homeGoals ? styles.winner : ''}`}>
+                        {getTeamName(match.awayTeamId)}
+                      </span>
+                      {match.result && <span className={styles.score}>{match.result.awayGoals}</span>}
+                   </div>
+
+                   {/* Action Button */}
+                   {match.homeTeamId && match.awayTeamId && (
+                    <button 
+                        className="absolute bottom-2 right-2 text-[10px] uppercase font-bold text-[hsl(var(--primary))] opacity-50 hover:opacity-100"
+                        onClick={() => onEditMatch && onEditMatch(match)}
+                    >
+                        {match.status === 'COMPLETED' ? 'Edit' : 'Enter'}
+                    </button>
+                   )}
                  </div>
-               ))}
-             </div>
+               </div>
+             ))}
           </div>
         ))}
       </div>

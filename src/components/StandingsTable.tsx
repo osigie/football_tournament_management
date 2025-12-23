@@ -21,6 +21,8 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({ standings, group
               <th>W</th>
               <th>D</th>
               <th>L</th>
+              <th>GF</th>
+              <th>GA</th>
               <th>GD</th>
               <th>Pts</th>
             </tr>
@@ -36,6 +38,8 @@ export const StandingsTable: React.FC<StandingsTableProps> = ({ standings, group
                 <td>{team.won}</td>
                 <td>{team.drawn}</td>
                 <td>{team.lost}</td>
+                <td>{team.goalsFor}</td>
+                <td>{team.goalsAgainst}</td>
                 <td>{team.goalDifference > 0 ? `+${team.goalDifference}` : team.goalDifference}</td>
                 <td className={styles.points}>{team.points}</td>
               </tr>

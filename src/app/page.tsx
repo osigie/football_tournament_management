@@ -10,7 +10,7 @@ import { Card } from '../components/ui/Card';
 import { Tournament, Group, Match } from '../types';
 import { generateFixtures } from '../utils/tournamentEngine';
 import { calculateStandings } from '../utils/rankingEngine';
-import { generateBracket } from '../utils/knockoutEngine';
+import { generateBracket, updateKnockoutBracket } from '../utils/knockoutEngine';
 
 export default function Home() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -31,24 +31,39 @@ export default function Home() {
   const handleUpdateResult = (matchId: string, result: any) => {
     if (!tournament) return;
 
-    // Helper to update match in groups
-    const newGroups = tournament.groups.map(group => {
-      const matchIndex = group.matches.findIndex(m => m.id === matchId);
-      if (matchIndex === -1) return group;
+    // Check if it's a Knockout match
+    const isKnockout = tournament.knockoutMatches.some(m => m.id === matchId);
 
-      const updatedMatches = [...group.matches];
-      updatedMatches[matchIndex] = {
-        ...updatedMatches[matchIndex],
-        status: 'COMPLETED',
-        result
-      };
-      return { ...group, matches: updatedMatches };
-    });
+    if (isKnockout) {
+        let updatedMatches = tournament.knockoutMatches.map(m => {
+            if (m.id === matchId) {
+                return { ...m, status: 'COMPLETED' as const, result };
+            }
+            return m;
+        });
+        
+        // Auto-Adjacency logic using the new engine function
+        updatedMatches = updateKnockoutBracket(updatedMatches);
 
-    // Helper to update match in knockout (if we had fully integrated knockout editing)
-    // For MVP, knockout matches are currently separate
-    
-    setTournament({ ...tournament, groups: newGroups });
+        setTournament({ ...tournament, knockoutMatches: updatedMatches });
+    } else {
+        // Group Stage Match
+        const newGroups = tournament.groups.map(group => {
+            const matchIndex = group.matches.findIndex(m => m.id === matchId);
+            if (matchIndex === -1) return group;
+      
+            const updatedMatches = [...group.matches];
+            updatedMatches[matchIndex] = {
+              ...updatedMatches[matchIndex],
+              status: 'COMPLETED',
+              result
+            };
+            return { ...group, matches: updatedMatches };
+          });
+          
+          setTournament({ ...tournament, groups: newGroups });
+    }
+
     setEditingMatch(null);
   };
     
@@ -141,7 +156,11 @@ export default function Home() {
         {tournament.knockoutMatches && tournament.knockoutMatches.length > 0 && (
           <section>
             <h3 className="text-xl font-semibold mb-4 opacity-80">Knockout Stage</h3>
-             <BracketViewer matches={tournament.knockoutMatches} teams={tournament.teams} />
+             <BracketViewer 
+                 matches={tournament.knockoutMatches} 
+                 teams={tournament.teams} 
+                 onEditMatch={(match) => setEditingMatch({ match })}
+             />
           </section>
         )}
       </div>
