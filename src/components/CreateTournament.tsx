@@ -14,6 +14,7 @@ interface CreateTournamentProps {
 export const CreateTournament: React.FC<CreateTournamentProps> = ({ onCreate }) => {
   const [name, setName] = useState('');
   const [teamNames, setTeamNames] = useState<string>(''); // Textarea input for now
+  const [knockoutFormat, setKnockoutFormat] = useState<'SINGLE' | 'HOME_AND_AWAY'>('SINGLE');
 
   const handleCreate = () => {
     const teams: Team[] = teamNames.split('\n').filter(n => n.trim()).map((n, i) => ({
@@ -35,6 +36,7 @@ export const CreateTournament: React.FC<CreateTournamentProps> = ({ onCreate }) 
       config: {
         name,
         format: 'GROUP_KNOCKOUT',
+        knockoutFormat,
         matchDurationMinutes: 90,
         advancement: { teamsPerGroup: 2, bestThirdPlaced: false }
       },
@@ -56,6 +58,34 @@ export const CreateTournament: React.FC<CreateTournamentProps> = ({ onCreate }) 
           onChange={(e) => setName(e.target.value)}
         />
         
+        <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium opacity-90">Knockout Stage Format</span>
+            <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                        type="radio" 
+                        name="knockoutStyle" 
+                        value="SINGLE"
+                        checked={knockoutFormat === 'SINGLE'} 
+                        onChange={() => setKnockoutFormat('SINGLE')}
+                        className="accent-[hsl(var(--primary))]"
+                    />
+                    Single Match
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                    <input 
+                        type="radio" 
+                        name="knockoutStyle" 
+                        value="HOME_AND_AWAY"
+                        checked={knockoutFormat === 'HOME_AND_AWAY'} 
+                        onChange={() => setKnockoutFormat('HOME_AND_AWAY')}
+                        className="accent-[hsl(var(--primary))]"
+                    />
+                    Home & Away
+                </label>
+            </div>
+        </div>
+
         <div className="flex flex-col gap-2">
           <label className="text-sm font-medium opacity-90">Teams (One per line)</label>
           <textarea 

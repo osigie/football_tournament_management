@@ -79,7 +79,7 @@ export default function Home() {
   const startKnockoutStage = () => {
     // Generate bracket based on current standings
     const allStandings = tournament.groups.map(g => getGroupStandings(g));
-    const bracket = generateBracket(allStandings, tournament.id);
+    const bracket = generateBracket(allStandings, tournament.id, tournament.config);
     setTournament({ ...tournament, knockoutMatches: bracket });
   };
 

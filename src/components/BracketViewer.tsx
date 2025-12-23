@@ -60,6 +60,13 @@ export const BracketViewer: React.FC<BracketViewerProps> = ({ matches, teams }) 
                       </span>
                       {match.result && <span className="bg-[var(--surface)] px-1.5 rounded">{match.result.awayGoals}</span>}
                    </div>
+                   
+                   {/* Leg Info */}
+                   {match.leg && (
+                    <div className="absolute top-0 right-0 bg-[var(--primary)] text-[var(--primary-foreground)] text-[10px] px-1 rounded-bl">
+                        L{match.leg}
+                    </div>
+                   )}
 
                    {/* Connector lines (visual only, simplified) */}
                    <div className="absolute right-[-24px] top-1/2 w-6 h-[1px] bg-[var(--glass-border)] hidden md:block"></div>

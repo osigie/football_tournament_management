@@ -31,6 +31,8 @@ export interface Match {
   status: MatchStatus;
   result?: MatchResult;
   round: number; // 0 for group stage, 1 for R16, 2 for QF, etc.
+  leg?: 1 | 2; // For Home & Away ties
+  aggregateMatchId?: string; // Link between two legs
   groupName?: string; // "A", "B", etc.
   tournamentId: string;
 }
@@ -60,6 +62,7 @@ export interface GroupStanding {
 export interface TournamentConfig {
   name: string;
   format: 'GROUP_KNOCKOUT' | 'KNOCKOUT_ONLY';
+  knockoutFormat: 'SINGLE' | 'HOME_AND_AWAY';
   matchDurationMinutes: number;
   advancement: {
     teamsPerGroup: number;
