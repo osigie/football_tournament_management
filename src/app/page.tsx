@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { CreateTournament } from '../components/CreateTournament';
 import { StandingsTable } from '../components/StandingsTable';
 import { BracketViewer } from '../components/BracketViewer';
+import { FixturesGrid } from '../components/FixturesGrid';
 import { MatchResultModal } from '../components/MatchResultModal';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
@@ -94,7 +95,11 @@ export default function Home() {
   const startKnockoutStage = () => {
     // Generate bracket based on current standings
     const allStandings = tournament.groups.map(g => getGroupStandings(g));
-    const bracket = generateBracket(allStandings, tournament.id, tournament.config);
+    let bracket = generateBracket(allStandings, tournament.id, tournament.config);
+    
+    // Auto-advance byes immediately
+    bracket = updateKnockoutBracket(bracket);
+    
     setTournament({ ...tournament, knockoutMatches: bracket });
   };
 
@@ -121,32 +126,12 @@ export default function Home() {
                   standings={getGroupStandings(group)} 
                 />
                 
-                <Card title="Fixtures" className="max-h-96 overflow-y-auto">
-                  <div className="flex flex-col gap-3">
-                    {group.matches.map(match => (
-                      <div key={match.id} className="flex justify-between items-center text-sm p-2 rounded bg-[hsla(220,15%,20%,0.3)]">
-                        <div className="w-1/3 text-right truncate pr-2">
-                           {/* Resolve names inefficiently for MVP */}
-                           {tournament.teams.find(t => t.id === match.homeTeamId)?.name}
-                        </div>
-                        <div className="font-mono font-bold bg-[var(--surface)] px-2 py-1 rounded">
-                          {match.status === 'COMPLETED' && match.result 
-                            ? `${match.result.homeGoals} - ${match.result.awayGoals}`
-                            : 'vs'
-                          }
-                        </div>
-                        <div className="w-1/3 text-left truncate pl-2">
-                           {tournament.teams.find(t => t.id === match.awayTeamId)?.name}
-                        </div>
-                        <button 
-                          className="ml-2 text-xs text-[hsl(var(--primary))] hover:underline"
-                          onClick={() => setEditingMatch({ match, groupIndex: idx })}
-                        >
-                          {match.status === 'COMPLETED' ? 'Edit' : 'Enter'}
-                        </button>
-                      </div>
-                    ))}
-                  </div>
+                <Card title="Fixtures" className="overflow-x-auto">
+                   <FixturesGrid 
+                      group={group} 
+                      teams={tournament.teams} 
+                      onEditMatch={(match) => setEditingMatch({ match, groupIndex: idx })}
+                   />
                 </Card>
               </div>
             ))}

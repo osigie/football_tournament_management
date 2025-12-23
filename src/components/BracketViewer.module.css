@@ -5,14 +5,14 @@
 
 .bracket {
   display: flex;
-  gap: 4rem; /* Space between rounds */
+  gap: 5rem; /* Space between rounds */
 }
 
 .round {
   display: flex;
   flex-direction: column;
   justify-content: space-around;
-  min-width: 240px;
+  min-width: 260px;
 }
 
 .roundHeader {
@@ -20,10 +20,10 @@
   font-weight: 800;
   text-transform: uppercase;
   color: hsl(var(--primary));
-  margin-bottom: 2rem;
-  font-size: 0.9rem;
+  margin-bottom: 2.5rem;
+  font-size: 0.95rem;
   letter-spacing: 0.05em;
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
   border-bottom: 2px solid hsla(var(--primary), 0.3);
 }
 
@@ -31,7 +31,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  margin: 1rem 0;
+  margin: 1.5rem 0;
 }
 
 /* Match Card Styling */
@@ -40,7 +40,7 @@
   background: hsla(220, 15%, 16%, 0.8);
   border: 1px solid var(--glass-border);
   border-radius: var(--radius);
-  padding: 0.75rem;
+  padding: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;

@@ -118,18 +118,36 @@ export const updateKnockoutBracket = (matches: Match[]): Match[] => {
 
             // Determine Winner
             let winnerId: string | null = null;
-
+            
+            // Check for Bye (Single Team present in pairing)
+            // Note: In earliest round, we might have Home vs Null.
+            // If pairingMatches.length === 1 and one team is missing, it's a bye.
             if (pairingMatches.length === 1) {
-                // Single Leg
                 const m = pairingMatches[0];
-                if (m.result) {
-                    if (m.result.homeGoals > m.result.awayGoals) winnerId = m.homeTeamId;
-                    else if (m.result.awayGoals > m.result.homeGoals) winnerId = m.awayTeamId;
-                    else {
-                         // Penalties logic should be here (homePenalties etc)
-                         // MVP: Assume Winner by goals or Random if draw (shouldn't happen in knockout)
-                         // For now, if drawn, pick home (TODO: Add penalty logic)
-                         winnerId = m.homeTeamId; 
+                if (!m.homeTeamId && !m.awayTeamId) continue; // Empty slot
+                
+                if (m.homeTeamId && !m.awayTeamId) {
+                    winnerId = m.homeTeamId;
+                    // Auto-complete status
+                    if (m.status !== 'COMPLETED') {
+                        m.status = 'COMPLETED';
+                        m.result = { homeGoals: 0, awayGoals: 0 }; // Symbolic
+                    }
+                } else if (!m.homeTeamId && m.awayTeamId) {
+                    winnerId = m.awayTeamId;
+                    if (m.status !== 'COMPLETED') {
+                         m.status = 'COMPLETED';
+                         m.result = { homeGoals: 0, awayGoals: 0 };
+                    }
+                } else {
+                    // Normal Match
+                    if (m.result) {
+                        if (m.result.homeGoals > m.result.awayGoals) winnerId = m.homeTeamId;
+                        else if (m.result.awayGoals > m.result.homeGoals) winnerId = m.awayTeamId;
+                        else {
+                             // MVP: Assume Winner by goals or Home if draw
+                             winnerId = m.homeTeamId; 
+                        }
                     }
                 }
             } else {

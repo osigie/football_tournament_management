@@ -41,7 +41,11 @@ export const BracketViewer: React.FC<BracketViewerProps> = ({ matches, teams, on
              <h4 className={styles.roundHeader}>
                {getRoundName(round)}
              </h4>
-             {rounds[round].map(match => (
+             {rounds[round].map(match => {
+               // specific check to hide empty placeholder matches that have no teams at all
+               if (!match.homeTeamId && !match.awayTeamId) return null;
+
+               return (
                <div key={match.id} className={styles.matchWrapper}>
                  <div className={styles.match}>
                    {match.leg && (
@@ -77,9 +81,16 @@ export const BracketViewer: React.FC<BracketViewerProps> = ({ matches, teams, on
                         {match.status === 'COMPLETED' ? 'Edit' : 'Enter'}
                     </button>
                    )}
+                   
+                   {!match.awayTeamId && match.homeTeamId && (
+                     <div className="absolute bottom-2 right-2 text-[10px] uppercase font-bold text-[hsl(var(--foreground))] opacity-30">
+                        Bye
+                     </div>
+                   )}
                  </div>
                </div>
-             ))}
+             );
+            })}
           </div>
         ))}
       </div>

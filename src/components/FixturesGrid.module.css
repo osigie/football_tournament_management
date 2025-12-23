@@ -1,0 +1,71 @@
+.container {
+  padding: 1.5rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.matchCard {
+  background: hsla(220, 15%, 15%, 0.6);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.matchCard:hover {
+  background: hsla(var(--primary), 0.1);
+  border-color: hsl(var(--primary));
+  transform: translateY(-2px);
+  cursor: pointer;
+}
+
+.teams {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.teamRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.teamName {
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.score {
+  font-family: monospace;
+  font-weight: 700;
+  background: var(--surface);
+  padding: 0.1rem 0.4rem;
+  border-radius: 4px;
+  min-width: 24px;
+  text-align: center;
+}
+
+.status {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  opacity: 0.5;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+.vs {
+    text-align: center;
+    font-size: 0.8rem;
+    opacity: 0.5;
+    font-weight: 600;
+}
