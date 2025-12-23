@@ -1,0 +1,62 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius);
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+  outline: none;
+  letter-spacing: 0.02em;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(0.5);
+}
+
+.primary {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent)));
+  color: hsl(var(--primary-foreground));
+  box-shadow: 0 4px 15px hsla(var(--primary), 0.3);
+}
+
+.primary:hover:not(:disabled) {
+  opacity: 0.95;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px hsla(var(--primary), 0.4);
+}
+
+.secondary {
+  background: hsl(var(--surface-hover));
+  color: hsl(var(--foreground));
+  border: 1px solid var(--glass-border);
+}
+
+.secondary:hover:not(:disabled) {
+  background: hsl(var(--surface));
+  border-color: hsla(var(--foreground), 0.2);
+}
+
+.outline {
+  background: transparent;
+  border: 2px solid hsl(var(--primary));
+  color: hsl(var(--primary));
+}
+
+.outline:hover:not(:disabled) {
+  background: hsla(var(--primary), 0.1);
+}
+
+.ghost {
+  background: transparent;
+  color: hsl(var(--foreground));
+}
+
+.ghost:hover:not(:disabled) {
+  background: hsla(var(--foreground), 0.05);
+}

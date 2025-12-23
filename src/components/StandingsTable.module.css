@@ -1,0 +1,67 @@
+.container {
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--glass-border);
+}
+
+.header {
+  padding: 1rem;
+  background: hsla(220, 15%, 20%, 0.5);
+  font-weight: 700;
+  color: hsl(var(--foreground));
+  border-bottom: 1px solid var(--glass-border);
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.table th {
+  padding: 0.75rem;
+  font-weight: 600;
+  color: hsla(var(--foreground), 0.7);
+  border-bottom: 1px solid var(--glass-border);
+  background: hsla(220, 15%, 16%, 0.5);
+}
+
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid hsla(var(--foreground), 0.05);
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.teamCol {
+  text-align: left;
+  font-weight: 500;
+  min-width: 120px;
+}
+
+.rankCol {
+  width: 40px;
+  color: hsla(var(--foreground), 0.5);
+}
+
+.points {
+  font-weight: 700;
+  color: hsl(var(--primary));
+}
+
+.qualified td {
+  background: linear-gradient(90deg, hsla(var(--primary), 0.1), transparent);
+}
+
+.qualified .rankCol {
+  color: hsl(var(--primary));
+}

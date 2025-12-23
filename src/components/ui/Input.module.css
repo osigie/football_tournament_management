@@ -1,0 +1,40 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  opacity: 0.9;
+}
+
+.input {
+  background: hsla(220, 15%, 8%, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius);
+  padding: 0.8rem 1rem;
+  color: hsl(var(--foreground));
+  font-family: inherit;
+  font-size: 1rem;
+  transition: all 0.2s ease;
+}
+
+.input:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsla(var(--primary), 0.2);
+  background: hsla(220, 15%, 8%, 0.7);
+}
+
+.errorInput {
+  border-color: #ef4444; /* Red-500 */
+}
+
+.errorText {
+  font-size: 0.8rem;
+  color: #ef4444;
+}
