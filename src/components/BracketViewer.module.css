@@ -106,39 +106,36 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Connectors */
-/* We use pseudo-elements on .matchWrapper to draw lines */
-
-/* Line extending to the right from the match */
-.matchWrapper::after {
-  content: '';
-  position: absolute;
-  right: -2rem; /* Half of gap */
-  top: 50%;
-  width: 2rem;
-  height: 2px;
-  background: var(--glass-border);
-  display: none; /* Hidden by default, shown based on round logic */
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+  
+  .bracket {
+    gap: 2.5rem;
+  }
+  
+  .round {
+    min-width: 220px;
+  }
+  
+  .roundHeader {
+    margin-bottom: 1.5rem;
+    font-size: 0.85rem;
+  }
+  
+  .match {
+    padding: 1rem;
+  }
 }
 
-/* Vertical bracket lines would require knowing the "pair" logic which is hard in purely flat lists.
-   However, we can hack it: 
-   If we assume standard 2-power brackets, we can use :nth-child logic if we render them in order.
-   But since we have "Home & Away" creating 2 matches per pairing, standard nth-child breaks.
-   
-   Better approach for Visuals: 
-   Use an SVG layer or just careful CSS borders on a wrapper.
-   
-   Let's stick to simple horizontal connectors for now which is cleaner than broken vertical ones.
-   "FIFA-like" usually emphasizes the card itself.
-   
-   To do verticals properly without JS calculations, we'd need a nested DOM:
-   <Round>
-     <Pair>
-       <Match1/>
-       <Match2/>
-     </Pair>
-   </Round>
-   
-   Let's refactor the React component to group by Pairings.
-*/
+@media (max-width: 480px) {
+  .bracket {
+    gap: 1.5rem;
+  }
+  
+  .round {
+    min-width: 200px;
+  }
+}

@@ -1,0 +1,218 @@
+.container {
+  padding: 2rem 0;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  background: linear-gradient(to right, hsl(var(--primary)), hsl(var(--secondary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 1.1rem;
+  color: hsla(var(--foreground), 0.6);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 2rem;
+  padding: 1rem;
+}
+
+.card {
+  position: relative;
+  background: hsla(220, 15%, 8%, 0.4);
+  border: 1px solid var(--glass-border);
+  border-radius: 1.5rem;
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 200px;
+  backdrop-filter: blur(12px);
+}
+
+.card:hover {
+  transform: translateY(-8px) scale(1.02);
+  border-color: hsla(var(--primary), 0.5);
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.4);
+}
+
+.cardGlow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at top right, hsla(var(--primary), 0.1), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.card:hover .cardGlow {
+  opacity: 1;
+}
+
+.createCard {
+  border: 2px dashed var(--glass-border);
+  background: transparent;
+  justify-content: center;
+  align-items: center;
+}
+
+.createCard:hover {
+  border-style: solid;
+  border-color: hsl(var(--primary));
+  background: hsla(var(--primary), 0.05);
+}
+
+.plusIcon {
+  font-size: 3rem;
+  font-weight: 200;
+  color: hsl(var(--primary));
+  margin-bottom: 1rem;
+}
+
+.createText {
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: hsla(var(--foreground), 0.8);
+}
+
+.cardContent {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tournamentStatus {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: hsla(var(--foreground), 0.5);
+  margin-bottom: 1rem;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 10px currentColor;
+}
+
+.draft { background-color: #fbbf24; color: #fbbf24; }
+.ongoing { background-color: #10b981; color: #10b981; }
+.completed { background-color: #3b82f6; color: #3b82f6; }
+
+.tournamentName {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.meta {
+  display: flex;
+  justify-content: space-between;
+  margin-top: auto;
+  font-size: 0.85rem;
+  color: hsla(var(--foreground), 0.5);
+  margin-bottom: 1.5rem;
+}
+
+.actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.openBtn {
+  flex: 1;
+  background: transparent !important;
+}
+
+.deleteBtn {
+  color: #ef4444;
+}
+
+.deleteBtn:hover {
+  background: rgba(239, 68, 68, 0.1) !important;
+}
+
+.openBtn, .deleteBtn {
+  flex: 1;
+  justify-content: center;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .title {
+    font-size: 2.25rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 1rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+    padding: 0.5rem;
+  }
+
+  .card {
+    min-height: 180px;
+    padding: 1.25rem;
+  }
+
+  .tournamentName {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.75rem;
+  }
+  
+  .actions {
+    flex-direction: row; /* Keep them side by side but balanced */
+    gap: 0.5rem;
+  }
+  
+  .deleteBtn {
+    background: hsla(0, 72%, 51%, 0.1) !important;
+    border: 1px solid hsla(0, 72%, 51%, 0.3) !important;
+  }
+}

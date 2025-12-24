@@ -79,3 +79,12 @@ export interface Tournament {
   groups: Group[];
   knockoutMatches: Match[];
 }
+
+export interface TournamentListItem {
+  id: string;
+  name: string;
+  status: string;
+  config: TournamentConfig;
+  teamCount: number;
+  createdAt: Date;
+}
