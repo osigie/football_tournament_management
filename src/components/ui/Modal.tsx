@@ -24,13 +24,12 @@ export const Modal: React.FC<ModalProps> = ({
     <div className={styles.overlay}>
       <div className={styles.backdrop} onClick={onClose}></div>
       <Card className={styles.modal} title={title}>
-        <div className={styles.content}>{children}</div>
-        {footer && (
-          <div className={styles.footer}>
-            {footer}
-            {!footer && onClose && <Button onClick={onClose}>Close</Button>}
-          </div>
-        )}
+        <div className={styles.content}>
+          {children}
+        </div>
+           <div className={styles.footer}>
+          {footer ?? <Button onClick={onClose}>Close</Button>}
+        </div>
       </Card>
     </div>
   );
