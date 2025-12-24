@@ -27,7 +27,7 @@ export const Modal: React.FC<ModalProps> = ({
         <div className={styles.content}>
           {children}
         </div>
-             <div className={styles.footer}>
+        <div className={styles.footer}>
           {footer ?? <Button onClick={onClose}>Close</Button>}
         </div>
       </Card>
