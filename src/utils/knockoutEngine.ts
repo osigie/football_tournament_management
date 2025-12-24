@@ -148,7 +148,7 @@ export const updateKnockoutBracket = (matches: Match[]): Match[] => {
                              // MVP: Assume Winner by goals or Home if draw
                              winnerId = m.homeTeamId; 
                         }
-                    }
+                      }
                 }
             } else {
                 // Two Legs

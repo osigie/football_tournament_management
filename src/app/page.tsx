@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CreateTournament } from '../components/CreateTournament';
 import { StandingsTable } from '../components/StandingsTable';
 import { BracketViewer } from '../components/BracketViewer';
@@ -8,125 +8,265 @@ import { FixturesGrid } from '../components/FixturesGrid';
 import { MatchResultModal } from '../components/MatchResultModal';
 import { Button } from '../components/ui/Button';
 import { Card } from '../components/ui/Card';
-import { Tournament, Group, Match } from '../types';
+import { Tournament, Group, Match, MatchResult, TournamentListItem } from '../types';
 import { generateFixtures } from '../utils/tournamentEngine';
 import { calculateStandings } from '../utils/rankingEngine';
 import { generateBracket, updateKnockoutBracket } from '../utils/knockoutEngine';
+import {
+  getTournament,
+  listTournaments,
+  updateMatchResult,
+  saveGroupMatches,
+  saveKnockoutMatches,
+  updateTournamentStatus,
+  deleteTournament,
+} from './actions';
+
+import { TournamentList } from '../components/TournamentList';
 
 export default function Home() {
   const [tournament, setTournament] = useState<Tournament | null>(null);
+  const [tournaments, setTournaments] = useState<TournamentListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
-  const handleTournamentCreated = (t: Tournament) => {
-    // Auto-generate fixtures for groups
+  // Sync tournament from URL on mount and list tournaments
+  useEffect(() => {
+    const init = async () => {
+      setLoading(true);
+      const listPromise = listTournaments();
+      
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      
+      if (id) {
+        const result = await getTournament(id);
+        if (result.success && result.tournament) {
+          setTournament(result.tournament);
+        }
+      }
+      
+      const listResult = await listPromise;
+      if (listResult.success && listResult.tournaments) {
+        setTournaments(listResult.tournaments);
+      }
+      
+      setLoading(false);
+    };
+    init();
+  }, []);
+
+  // Update URL when tournament changes
+  useEffect(() => {
+    const url = new URL(window.location.href);
+    if (tournament) {
+      url.searchParams.set('id', tournament.id);
+    } else {
+      url.searchParams.delete('id');
+    }
+    window.history.pushState({}, '', url);
+  }, [tournament]);
+
+  const loadTournaments = async () => {
+    const result = await listTournaments();
+    if (result.success && result.tournaments) {
+      setTournaments(result.tournaments);
+    }
+  };
+
+  const loadTournament = async (tournamentId: string) => {
+    setLoading(true);
+    const result = await getTournament(tournamentId);
+    if (result.success && result.tournament) {
+      setTournament(result.tournament);
+      setShowCreateForm(false);
+    }
+    setLoading(false);
+  };
+
+  const handleTournamentCreated = async (t: Tournament) => {
+    // Optimistically set the tournament to show the structure immediately if possible
+    // But we need fixtures first, so let's generate them
     const groupsWithMatches = t.groups.map(g => ({
       ...g,
       matches: generateFixtures(g, t.id)
     }));
     
-    setTournament({ ...t, groups: groupsWithMatches, status: 'ONGOING' });
+    const preparedTournament = { ...t, groups: groupsWithMatches, status: 'ONGOING' as const };
+    setTournament(preparedTournament);
+    
+    // Save to DB in background
+    Promise.all([
+      ...groupsWithMatches.map(group => saveGroupMatches(t.id, group.id, group.matches)),
+      updateTournamentStatus(t.id, 'ONGOING')
+    ]).then(() => {
+      loadTournaments();
+    });
   };
 
-  // State for manual score entry
   const [editingMatch, setEditingMatch] = useState<{ match: Match, groupIndex?: number } | null>(null);
 
-  const handleUpdateResult = (matchId: string, result: any) => {
+  const handleUpdateResult = async (matchId: string, result: MatchResult) => {
     if (!tournament) return;
 
-    // Check if it's a Knockout match
+    // OPTIMISTIC UPDATE: Update local state immediately
     const isKnockout = tournament.knockoutMatches.some(m => m.id === matchId);
 
     if (isKnockout) {
-        let updatedMatches = tournament.knockoutMatches.map(m => {
-            if (m.id === matchId) {
-                return { ...m, status: 'COMPLETED' as const, result };
-            }
-            return m;
-        });
-        
-        // Auto-Adjacency logic using the new engine function
-        updatedMatches = updateKnockoutBracket(updatedMatches);
-
-        setTournament({ ...tournament, knockoutMatches: updatedMatches });
-    } else {
-        // Group Stage Match
-        const newGroups = tournament.groups.map(group => {
-            const matchIndex = group.matches.findIndex(m => m.id === matchId);
-            if (matchIndex === -1) return group;
+      let updatedMatches = tournament.knockoutMatches.map(m => {
+        if (m.id === matchId) {
+          return { ...m, status: 'COMPLETED' as const, result };
+        }
+        return m;
+      });
       
-            const updatedMatches = [...group.matches];
-            updatedMatches[matchIndex] = {
-              ...updatedMatches[matchIndex],
-              status: 'COMPLETED',
-              result
-            };
-            return { ...group, matches: updatedMatches };
-          });
-          
-          setTournament({ ...tournament, groups: newGroups });
+      updatedMatches = updateKnockoutBracket(updatedMatches);
+      setTournament({ ...tournament, knockoutMatches: updatedMatches });
+      
+      // Save in background
+      updateMatchResult(matchId, result);
+      saveKnockoutMatches(tournament.id, updatedMatches);
+    } else {
+      const newGroups = tournament.groups.map(group => {
+        const matchIndex = group.matches.findIndex(m => m.id === matchId);
+        if (matchIndex === -1) return group;
+
+        const updatedMatches = [...group.matches];
+        updatedMatches[matchIndex] = {
+          ...updatedMatches[matchIndex],
+          status: 'COMPLETED',
+          result
+        };
+        
+        // Save in background
+        updateMatchResult(matchId, result);
+        saveGroupMatches(tournament.id, group.id, updatedMatches);
+        
+        return { ...group, matches: updatedMatches };
+      });
+      
+      setTournament({ ...tournament, groups: newGroups });
     }
 
     setEditingMatch(null);
   };
-    
-  if (!tournament) {
 
+  const handleDeleteTournament = async (tournamentId: string) => {
+    if (confirm('Are you sure you want to delete this tournament? Permanent action.')) {
+      await deleteTournament(tournamentId);
+      if (tournament?.id === tournamentId) {
+        setTournament(null);
+      }
+      await loadTournaments();
+    }
+  };
+    
+  if (loading) {
     return (
-      <div className="py-10">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-center mb-10 primary-gradient-text tracking-tight">
-          TournamentFlow
-        </h1>
-        <CreateTournament onCreate={handleTournamentCreated} />
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="w-12 h-12 border-4 border-[hsl(var(--primary))] border-t-transparent rounded-full animate-spin mb-4" />
+        <div className="text-xl font-bold opacity-70 tracking-widest uppercase">Initializing Arena...</div>
       </div>
     );
   }
 
-  // Get current standings based on matches
-  // Helper to find teams in a group
+  // Home View: Fancy List or Create Form
+  if (!tournament) {
+    return (
+      <div className="py-6 md:py-10 animate-in fade-in duration-700 px-4">
+        <h1 className="text-4xl md:text-5xl lg:text-7xl font-black text-center mb-4 primary-gradient-text tracking-tighter italic px-2">
+          Tournament Flow
+        </h1>
+        <p className="text-center text-base md:text-lg opacity-50 mb-8 md:mb-12 max-w-2xl mx-auto px-4">
+          The ultimate platform for managing football tournaments. Seamless, social, and professional.
+        </p>
+        
+        {showCreateForm ? (
+          <div className="animate-in slide-in-from-bottom duration-500">
+            <div className="max-w-3xl mx-auto mb-8 px-4">
+              <Button variant="ghost" onClick={() => setShowCreateForm(false)} className="mb-4">
+                ← Back to Tournament List
+              </Button>
+            </div>
+            <CreateTournament onCreate={handleTournamentCreated} />
+          </div>
+        ) : (
+          <TournamentList 
+            tournaments={tournaments}
+            onOpen={loadTournament}
+            onDelete={handleDeleteTournament}
+            onCreateNew={() => setShowCreateForm(true)}
+          />
+        )}
+      </div>
+    );
+  }
+
+  // Tournament View
   const getGroupStandings = (group: Group) => {
     const groupTeams = tournament.teams.filter(t => group.teamIds.includes(t.id));
     return calculateStandings(groupTeams, group.matches);
   };
 
-  // Determine if group stage is complete to show bracket button
   const isGroupStageComplete = tournament.groups.every(g => 
     g.matches.every(m => m.status === 'COMPLETED')
   );
 
-  const startKnockoutStage = () => {
-    // Generate bracket based on current standings
+  const startKnockoutStage = async () => {
     const allStandings = tournament.groups.map(g => getGroupStandings(g));
     let bracket = generateBracket(allStandings, tournament.id, tournament.config);
-    
-    // Auto-advance byes immediately
     bracket = updateKnockoutBracket(bracket);
     
+    // Optimistic update
     setTournament({ ...tournament, knockoutMatches: bracket });
+    
+    // Background save
+    saveKnockoutMatches(tournament.id, bracket);
   };
 
   return (
-    <div className="pb-20">
-      <header className="flex justify-between items-center mb-8 py-4 border-b border-[var(--glass-border)]">
-        <h2 className="text-2xl font-bold">{tournament.name}</h2>
-        <div className="flex gap-4">
+    <div className="pb-20 animate-in fade-in zoom-in-95 duration-500 px-4 md:px-0">
+      <header className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 md:mb-12 py-4 md:py-6 border-b border-[var(--glass-border)] gap-6">
+        <div>
+          <Button variant="ghost" onClick={() => setTournament(null)} className="mb-2 p-0 h-auto hover:bg-transparent opacity-50 hover:opacity-100">
+            ← Home
+          </Button>
+          <h2 className="text-2xl md:text-4xl font-black tracking-tight">{tournament.name}</h2>
+        </div>
+        
+        <div className="flex flex-wrap gap-4">
+          <Button 
+            variant="outline" 
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              alert('Share link copied to clipboard!');
+            }}
+          >
+            Share Link
+          </Button>
           {isGroupStageComplete && tournament.knockoutMatches.length === 0 && (
-             <Button onClick={startKnockoutStage}>Generate Knockout Bracket</Button>
+             <Button onClick={startKnockoutStage} className="pulse-animation">Generate Knockout Bracket</Button>
           )}
-          <Button variant="outline" onClick={() => setTournament(null)}>New Tournament</Button>
+          <Button variant="primary" onClick={() => setTournament(null)}>Switch Tournament</Button>
         </div>
       </header>
       
-      <div className="flex flex-col gap-12">
+      <div className="flex flex-col gap-10 md:gap-16">
         <section>
-          <h3 className="text-xl font-semibold mb-4 opacity-80">Group Stage</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="flex items-center gap-4 mb-6 md:mb-8">
+            <h3 className="text-xl md:text-2xl font-bold opacity-90">Group Stage</h3>
+            <div className="h-px flex-1 bg-gradient-to-r from-[var(--glass-border)] to-transparent" />
+          </div>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-12">
             {tournament.groups.map((group, idx) => (
-              <div key={group.id} className="flex flex-col gap-4">
+              <div key={group.id} className="flex flex-col gap-6">
                 <StandingsTable 
-                  groupName={group.name} 
+                  groupName={`Group ${group.name}`} 
                   standings={getGroupStandings(group)} 
                 />
                 
-                <Card title="Fixtures" className="overflow-x-auto">
+                <Card title="Fixtures" className="glass-card">
                    <FixturesGrid 
                       group={group} 
                       teams={tournament.teams} 
@@ -139,8 +279,11 @@ export default function Home() {
         </section>
 
         {tournament.knockoutMatches && tournament.knockoutMatches.length > 0 && (
-          <section>
-            <h3 className="text-xl font-semibold mb-4 opacity-80">Knockout Stage</h3>
+          <section className="animate-in slide-in-from-bottom duration-700">
+            <div className="flex items-center gap-4 mb-8">
+              <h3 className="text-2xl font-bold opacity-90">Knockout Stage</h3>
+              <div className="h-px flex-1 bg-gradient-to-r from-[var(--glass-border)] to-transparent" />
+            </div>
              <BracketViewer 
                  matches={tournament.knockoutMatches} 
                  teams={tournament.teams} 
